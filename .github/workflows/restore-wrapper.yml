@@ -1,4 +1,3 @@
-
 name: Restore Gradle Wrapper and Build APK
 
 on:
@@ -26,24 +25,31 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
-      - name: Generate missing Gradle Wrapper
+      - name: Generate Gradle Wrapper
         run: |
           mkdir -p /tmp/wrapper-project
           cd /tmp/wrapper-project
+
+          echo "rootProject.name = 'wrapper-bootstrap'" > settings.gradle
+          echo "tasks.register('placeholder')" > build.gradle
+
           gradle wrapper --gradle-version 9.3.1
+
           cd "$GITHUB_WORKSPACE"
+
           cp /tmp/wrapper-project/gradlew .
           cp /tmp/wrapper-project/gradlew.bat .
           mkdir -p gradle/wrapper
-          cp /tmp/wrapper-project/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+          cp /tmp/wrapper-project/gradle/wrapper/* gradle/wrapper/
+
           chmod +x gradlew
 
-      - name: Save wrapper files to GitHub
+      - name: Save wrapper files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar
-          git commit -m "Add missing Gradle wrapper files" || echo "No changes"
+          git add gradlew gradlew.bat gradle/wrapper/
+          git commit -m "Add Gradle wrapper files" || echo "No changes"
           git push
 
       - name: Build debug APK
