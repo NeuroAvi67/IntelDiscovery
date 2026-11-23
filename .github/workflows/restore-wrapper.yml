@@ -1,0 +1,57 @@
+
+name: Restore Gradle Wrapper and Build APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Generate missing Gradle Wrapper
+        run: |
+          mkdir -p /tmp/wrapper-project
+          cd /tmp/wrapper-project
+          gradle wrapper --gradle-version 9.3.1
+          cd "$GITHUB_WORKSPACE"
+          cp /tmp/wrapper-project/gradlew .
+          cp /tmp/wrapper-project/gradlew.bat .
+          mkdir -p gradle/wrapper
+          cp /tmp/wrapper-project/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
+          chmod +x gradlew
+
+      - name: Save wrapper files to GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar
+          git commit -m "Add missing Gradle wrapper files" || echo "No changes"
+          git push
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: IntelDiscovery-APK
+          path: app/build/outputs/apk/**/*.apk
+          
