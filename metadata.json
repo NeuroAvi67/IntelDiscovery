@@ -1,0 +1,6 @@
+{
+  "name": "IntelAtlas",
+  "description": "AI-powered OSINT website discovery, evaluation, comparison, and intelligence toolkit.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,291 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidStringList(val, maxItems) {
+      return val is list && val.size() <= maxItems && (val.size() == 0 || val[0] is string);
+    }
+
+    function isValidWebsite(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 140 &&
+             data.url is string && data.url.size() >= 4 && data.url.size() <= 500 &&
+             data.domain is string && data.domain.size() >= 1 && data.domain.size() <= 200 &&
+             data.description is string && data.description.size() <= 1500 &&
+             data.purpose is string && data.purpose.size() <= 500 &&
+             isValidStringList(data.categories, 10) &&
+             isValidStringList(data.keyFeatures, 15) &&
+             data.accessType in ['FREE', 'PAID', 'LIMITED_ACCESS'] &&
+             data.pricingModel is string && data.pricingModel.size() <= 300 &&
+             data.freeTierLimitations is string && data.freeTierLimitations.size() <= 500 &&
+             data.registrationRequired in ['NONE', 'OPTIONAL', 'REQUIRED', 'UNVERIFIED'] &&
+             data.openSource is bool &&
+             data.aiPowered is bool &&
+             data.skillLevel in ['BEGINNER', 'INTERMEDIATE', 'PROFESSIONAL', 'ALL'] &&
+             data.recommendationScore is int && data.recommendationScore >= 0 && data.recommendationScore <= 100 &&
+             data.recommendationLabel is string && data.recommendationLabel.size() <= 120 &&
+             data.whyRecommended is string && data.whyRecommended.size() <= 1000 &&
+             isValidStringList(data.advantages, 10) &&
+             isValidStringList(data.disadvantages, 10) &&
+             data.whoShouldUse is string && data.whoShouldUse.size() <= 500 &&
+             data.verifiedFacts is string && data.verifiedFacts.size() <= 600 &&
+             data.sourceType in ['CURATED', 'AI_DISCOVERED', 'USER_ADDED'] &&
+             data.savedByUser is bool &&
+             data.notes is string && data.notes.size() <= 2000 &&
+             isValidStringList(data.tags, 15) &&
+             data.verificationStatus in ['VERIFIED', 'UNREACHABLE', 'UNVERIFIED'] &&
+             data.httpStatusCode is int && data.httpStatusCode >= 0 && data.httpStatusCode <= 999 &&
+             data.lastCheckedAt is string && data.lastCheckedAt.size() <= 64 &&
+             data.visitCount is int && data.visitCount >= 0 && data.visitCount <= 1000000 &&
+             (!('lastVisitedAt' in data) || (data.lastVisitedAt is timestamp && data.lastVisitedAt <= request.time)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCollection(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.description is string && data.description.size() <= 500 &&
+             isValidStringList(data.websiteIds, 100) &&
+             data.colorHex is string && data.colorHex.size() <= 20 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCategory(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 60 &&
+             data.description is string && data.description.size() <= 300 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidSearchHistory(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.query is string && data.query.size() >= 1 && data.query.size() <= 500 &&
+             data.filtersSummary is string && data.filtersSummary.size() <= 300 &&
+             isValidStringList(data.resultWebsiteIds, 30) &&
+             data.resultCount is int && data.resultCount >= 0 && data.resultCount <= 100 &&
+             data.searchSource is string && data.searchSource.size() >= 1 && data.searchSource.size() <= 80 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidConversation(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.contextLabel is string && data.contextLabel.size() <= 200 &&
+             data.messageCount is int && data.messageCount >= 0 && data.messageCount <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAiMessage(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.role in ['user', 'model'] &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 20000 &&
+             data.contextSummary is string && data.contextSummary.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidPreferences(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.darkTheme is bool &&
+             data.preferredModel is string && data.preferredModel.size() >= 1 && data.preferredModel.size() <= 60 &&
+             data.autoSaveDiscovered is bool &&
+             data.autoVerifyLinks is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/websites/{websiteId} {
+      allow get: if isOwner(userId) && isValidId(websiteId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(websiteId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'url', 'domain', 'description', 'purpose',
+                         'categories', 'keyFeatures', 'accessType', 'pricingModel',
+                         'freeTierLimitations', 'registrationRequired', 'openSource', 'aiPowered',
+                         'skillLevel', 'recommendationScore', 'recommendationLabel',
+                         'whyRecommended', 'advantages', 'disadvantages', 'whoShouldUse',
+                         'verifiedFacts', 'sourceType', 'savedByUser', 'notes', 'tags',
+                         'verificationStatus', 'httpStatusCode', 'lastCheckedAt', 'visitCount',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'url', 'domain', 'description', 'purpose',
+                         'categories', 'keyFeatures', 'accessType', 'pricingModel',
+                         'freeTierLimitations', 'registrationRequired', 'openSource', 'aiPowered',
+                         'skillLevel', 'recommendationScore', 'recommendationLabel',
+                         'whyRecommended', 'advantages', 'disadvantages', 'whoShouldUse',
+                         'verifiedFacts', 'sourceType', 'savedByUser', 'notes', 'tags',
+                         'verificationStatus', 'httpStatusCode', 'lastCheckedAt', 'visitCount',
+                         'lastVisitedAt', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidWebsite(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(websiteId) &&
+                       isValidWebsite(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         incoming().diff(existing()).affectedKeys().hasOnly(['savedByUser', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'tags', 'categories', 'description', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['verificationStatus', 'httpStatusCode', 'lastCheckedAt', 'verifiedFacts', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['visitCount', 'lastVisitedAt', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'name', 'description', 'purpose', 'categories', 'keyFeatures',
+                           'accessType', 'pricingModel', 'freeTierLimitations', 'registrationRequired',
+                           'openSource', 'aiPowered', 'skillLevel', 'recommendationScore',
+                           'recommendationLabel', 'whyRecommended', 'advantages', 'disadvantages',
+                           'whoShouldUse', 'verifiedFacts', 'verificationStatus', 'httpStatusCode',
+                           'lastCheckedAt', 'updatedAt'
+                         ])
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(websiteId);
+    }
+
+    match /users/{userId}/collections/{collectionId} {
+      allow get: if isOwner(userId) && isValidId(collectionId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(collectionId) &&
+                       incoming().keys().hasAll(['userId', 'name', 'description', 'websiteIds', 'colorHex', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'description', 'websiteIds', 'colorHex', 'createdAt', 'updatedAt']) &&
+                       isValidCollection(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(collectionId) &&
+                       isValidCollection(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'colorHex', 'updatedAt']) ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['websiteIds', 'updatedAt'])
+                       );
+
+      allow delete: if isOwner(userId) && isValidId(collectionId);
+    }
+
+    match /users/{userId}/categories/{categoryId} {
+      allow get: if isOwner(userId) && isValidId(categoryId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(categoryId) &&
+                       incoming().keys().hasAll(['userId', 'name', 'description', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'description', 'createdAt', 'updatedAt']) &&
+                       isValidCategory(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(categoryId) &&
+                       isValidCategory(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(categoryId);
+    }
+
+    match /users/{userId}/searchHistory/{historyId} {
+      allow get: if isOwner(userId) && isValidId(historyId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(historyId) &&
+                       incoming().keys().hasAll(['userId', 'query', 'filtersSummary', 'resultWebsiteIds', 'resultCount', 'searchSource', 'createdAt']) &&
+                       incoming().keys().hasOnly(['userId', 'query', 'filtersSummary', 'resultWebsiteIds', 'resultCount', 'searchSource', 'createdAt']) &&
+                       isValidSearchHistory(incoming(), userId);
+
+      allow update: if false;
+      allow delete: if isOwner(userId) && isValidId(historyId);
+    }
+
+    match /users/{userId}/aiConversations/{conversationId} {
+      allow get: if isOwner(userId) && isValidId(conversationId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(conversationId) &&
+                       incoming().keys().hasAll(['userId', 'title', 'contextLabel', 'messageCount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'title', 'contextLabel', 'messageCount', 'createdAt', 'updatedAt']) &&
+                       isValidConversation(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(conversationId) &&
+                       isValidConversation(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'contextLabel', 'messageCount', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(conversationId);
+
+      match /messages/{messageId} {
+        allow get: if isOwner(userId) && isValidId(conversationId) && isValidId(messageId);
+        allow list: if isOwner(userId) && isValidId(conversationId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(conversationId) &&
+                         isValidId(messageId) &&
+                         (
+                           exists(/databases/$(database)/documents/users/$(userId)/aiConversations/$(conversationId)) ||
+                           existsAfter(/databases/$(database)/documents/users/$(userId)/aiConversations/$(conversationId))
+                         ) &&
+                         incoming().keys().hasAll(['userId', 'role', 'content', 'contextSummary', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'role', 'content', 'contextSummary', 'createdAt']) &&
+                         isValidAiMessage(incoming(), userId);
+
+        allow update: if false;
+        allow delete: if isOwner(userId) && isValidId(conversationId) && isValidId(messageId);
+      }
+    }
+
+    match /users/{userId}/preferences/{prefId} {
+      allow get: if isOwner(userId) && isValidId(prefId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(prefId) &&
+                       incoming().keys().hasAll(['userId', 'darkTheme', 'preferredModel', 'autoSaveDiscovered', 'autoVerifyLinks', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'darkTheme', 'preferredModel', 'autoSaveDiscovered', 'autoVerifyLinks', 'createdAt', 'updatedAt']) &&
+                       isValidPreferences(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(prefId) &&
+                       isValidPreferences(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['darkTheme', 'preferredModel', 'autoSaveDiscovered', 'autoVerifyLinks', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(prefId);
+    }
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "WebsiteResource": {
+      "title": "WebsiteResource",
+      "description": "Discovered, curated, or user-saved OSINT/intelligence website resource.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "domain": { "type": "string" },
+        "description": { "type": "string" },
+        "purpose": { "type": "string" },
+        "categories": { "type": "array" },
+        "keyFeatures": { "type": "array" },
+        "accessType": { "type": "string", "enum": ["FREE", "PAID", "LIMITED_ACCESS"] },
+        "pricingModel": { "type": "string" },
+        "freeTierLimitations": { "type": "string" },
+        "registrationRequired": { "type": "string", "enum": ["NONE", "OPTIONAL", "REQUIRED", "UNVERIFIED"] },
+        "openSource": { "type": "boolean" },
+        "aiPowered": { "type": "boolean" },
+        "skillLevel": { "type": "string", "enum": ["BEGINNER", "INTERMEDIATE", "PROFESSIONAL", "ALL"] },
+        "recommendationScore": { "type": "integer" },
+        "recommendationLabel": { "type": "string" },
+        "whyRecommended": { "type": "string" },
+        "advantages": { "type": "array" },
+        "disadvantages": { "type": "array" },
+        "whoShouldUse": { "type": "string" },
+        "verifiedFacts": { "type": "string" },
+        "sourceType": { "type": "string", "enum": ["CURATED", "AI_DISCOVERED", "USER_ADDED"] },
+        "savedByUser": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "tags": { "type": "array" },
+        "verificationStatus": { "type": "string", "enum": ["VERIFIED", "UNREACHABLE", "UNVERIFIED"] },
+        "httpStatusCode": { "type": "integer" },
+        "lastCheckedAt": { "type": "string" },
+        "visitCount": { "type": "integer" },
+        "lastVisitedAt": { "type": "string", "format": "date-time", "description": "Clients submit FieldValue.serverTimestamp()" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Clients submit FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Clients submit FieldValue.serverTimestamp()" }
+      },
+      "required": [
+        "userId", "name", "url", "domain", "description", "purpose",
+        "categories", "keyFeatures", "accessType", "pricingModel",
+        "freeTierLimitations", "registrationRequired", "openSource", "aiPowered",
+        "skillLevel", "recommendationScore", "recommendationLabel",
+        "whyRecommended", "advantages", "disadvantages", "whoShouldUse",
+        "verifiedFacts", "sourceType", "savedByUser", "notes", "tags",
+        "verificationStatus", "httpStatusCode", "lastCheckedAt", "visitCount",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "ResearchCollection": {
+      "title": "ResearchCollection",
+      "description": "User-curated research dossier containing saved website IDs.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "websiteIds": { "type": "array" },
+        "colorHex": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "description", "websiteIds", "colorHex", "createdAt", "updatedAt"]
+    },
+    "CustomCategory": {
+      "title": "CustomCategory",
+      "description": "User-created intelligence category.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "description", "createdAt", "updatedAt"]
+    },
+    "SearchHistoryEntry": {
+      "title": "SearchHistoryEntry",
+      "description": "Persisted AI/web search query record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "query": { "type": "string" },
+        "filtersSummary": { "type": "string" },
+        "resultWebsiteIds": { "type": "array" },
+        "resultCount": { "type": "integer" },
+        "searchSource": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "query", "filtersSummary", "resultWebsiteIds", "resultCount", "searchSource", "createdAt"]
+    },
+    "AiConversation": {
+      "title": "AiConversation",
+      "description": "Context-aware AI Ask conversation session.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "contextLabel": { "type": "string" },
+        "messageCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "contextLabel", "messageCount", "createdAt", "updatedAt"]
+    },
+    "AiMessage": {
+      "title": "AiMessage",
+      "description": "Individual message inside an AI Ask conversation.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "model"] },
+        "content": { "type": "string" },
+        "contextSummary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "role", "content", "contextSummary", "createdAt"]
+    },
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "User workspace preferences.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "darkTheme": { "type": "boolean" },
+        "preferredModel": { "type": "string" },
+        "autoSaveDiscovered": { "type": "boolean" },
+        "autoVerifyLinks": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "darkTheme", "preferredModel", "autoSaveDiscovered", "autoVerifyLinks", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/websites/{websiteId}": {
+      "schema": { "$ref": "#/entities/WebsiteResource" },
+      "description": "User-scoped library of curated, AI-discovered, and saved websites."
+    },
+    "/users/{userId}/collections/{collectionId}": {
+      "schema": { "$ref": "#/entities/ResearchCollection" },
+      "description": "User-scoped research collections grouping website resources."
+    },
+    "/users/{userId}/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/CustomCategory" },
+      "description": "User-scoped custom intelligence categories."
+    },
+    "/users/{userId}/searchHistory/{historyId}": {
+      "schema": { "$ref": "#/entities/SearchHistoryEntry" },
+      "description": "User-scoped persistent search history."
+    },
+    "/users/{userId}/aiConversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/AiConversation" },
+      "description": "User-scoped AI Ask conversation threads."
+    },
+    "/users/{userId}/aiConversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/AiMessage" },
+      "description": "Messages belonging to an AI Ask conversation thread."
+    },
+    "/users/{userId}/preferences/{prefId}": {
+      "schema": { "$ref": "#/entities/UserPreferences" },
+      "description": "User-scoped application settings."
+    }
+  }
+}
